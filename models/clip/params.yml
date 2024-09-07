@@ -1,0 +1,4 @@
+config:
+  FPS: 1
+  video_violation_type: ['WRONG_FACE_FACESCAN' ,'NO_FACE', 'MULTIPLE_FACES', 'WRONG_FACE', 'BACKGROUND_MOTION']
+  VIDEO_FRAMES_PATH: "video_incidients_ajeet"
