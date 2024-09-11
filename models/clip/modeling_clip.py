@@ -31,6 +31,56 @@ class CLIP:
             text_embedding = self.model.get_text_features(**inputs)
         text_embedding = text_embedding / text_embedding.norm(dim=-1, keepdim=True)
         return text_embedding
+    
+    def _run_vqa(self, image_path, text_inputs):
+        """Common method to process inputs and compute probabilities."""
+        image = Image.open(image_path)
+
+        # Prepare inputs for CLIP
+        inputs = self.processor(text=text_inputs, images=image, return_tensors="pt", padding=True).to(self.device)
+
+        # Forward pass
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+
+        # Get the logits and probabilities
+        logits_per_image = outputs.logits_per_image  # Image-text similarity scores
+        probs = logits_per_image.softmax(dim=1)  # Convert logits to probabilities
+
+        return probs
+
+    def detect_multiple_persons(self, image_path):
+        """Classify if the image contains a single person or multiple persons."""
+        text_inputs = ["A photo of multiple persons", "A photo of a single person"]
+        probs = self._run_vqa(image_path, text_inputs)
+
+        # Interpret the result
+        label = "multiple persons" if probs[0][0] > probs[0][1] else "single person"
+        probability = probs.max().item()
+
+        return label, probability
+
+    def detect_no_person(self, image_path):
+        """Classify if there is no person in the image."""
+        text_inputs = ["A photo with no person", "A photo with a person"]
+        probs = self._run_vqa(image_path, text_inputs)
+
+        # Interpret the result
+        label = "no person" if probs[0][0] > probs[0][1] else "person present"
+        probability = probs.max().item()
+
+        return label, probability
+
+    def detect_person_using_phone(self, image_path):
+        """Classify if a person in the image is using a phone."""
+        text_inputs = ["A phot of a person using a phone", "A photo of a person not using a phone"]
+        probs = self._run_vqa(image_path, text_inputs)
+
+        # Interpret the result
+        label = "person using phone" if probs[0][0] > probs[0][1] else "not using phone"
+        probability = probs.max().item()
+
+        return label, probability
 
 
 
