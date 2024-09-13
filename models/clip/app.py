@@ -32,7 +32,7 @@ if uploaded_video is not None:
     # Extract frames from the video
     st.text("Extracting frames...")
     video_processor = FrameExtractor(video_path, fps=1)
-    frames = video_processor.extract_frames(start_frame=0, length=3600, video_piece_id=0)
+    frames = video_processor.extract_frames(start_frame=0, length=15000, video_piece_id=0)
     
     # # Display some frames
     # st.text("Displaying a few frames...")
@@ -40,20 +40,20 @@ if uploaded_video is not None:
     #     st.image(frame, caption=f"Frame {i+1}")
 
     # Compute embeddings
-    st.text("Computing embeddings...")
-    images, image_embeddings = clip_model.get_image_embeddings(frames)
+    # st.text("Computing embeddings...")
+    # images, image_embeddings = clip_model.get_image_embeddings(frames)
 
-    print(image_embeddings.shape)
-    st.text(image_embeddings.shape)
-    # # Text query input
+    # print(image_embeddings.shape)
+    # st.text(image_embeddings.shape)
+    # # # Text query input
     
-    if query:
-        # Perform text-image retrieval
-        st.text("Retrieving frames matching the query...")
-        similarities = retriever.retrieve_similar_frames(query, image_embeddings)
-        print(similarities)
+    # if query:
+    #     # Perform text-image retrieval
+    #     st.text("Retrieving frames matching the query...")
+    #     similarities = retriever.retrieve_similar_frames(query, image_embeddings)
+    #     print(similarities)
         
-        # Get and display the top frames
-        top_frames, top_similarities = retriever.get_top_matching_frames(images, similarities, 10)
-        for i, (frame, score) in enumerate(zip(top_frames, top_similarities)):
-            st.image(frame, caption=f"Match {i+1} with similarity score {score:.4f}")
+    #     # Get and display the top frames
+    #     top_frames, top_similarities = retriever.get_top_matching_frames(images, similarities, 10)
+    #     for i, (frame, score) in enumerate(zip(top_frames, top_similarities)):
+    #         st.image(frame, caption=f"Match {i+1} with similarity score {score:.4f}")

@@ -89,3 +89,7 @@ class FrameExtractor:
 #     frames = extractor.extract_frames(start_frame=0, length=10, video_piece_id=0)
 #     elapsed_time = time.time() - start_time
 #     logger.info(f"Time taken to extract {len(frames)} frames: {elapsed_time:.2f} seconds")
+
+# if __name__ == "__main__":
+#     video_processor = FrameExtractor("/home/ajeet/codework/daaset-download/Dataset/benchmark_dataset_13_1_20/2591822/2649876", fps=1)
+#     frames = video_processor.extract_frames(start_frame=0, length=25000, video_piece_id=0)
