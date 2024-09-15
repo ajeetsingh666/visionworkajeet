@@ -12,7 +12,7 @@
             "console": "integratedTerminal",
             "args":[
                 "run",
-                "/home/ajeet/codework/visionworkajeet/models/clip/embedding_app.py"
+                "/home/ajeet/codework/visionworkajeet/models/clip/combine_app.py"
             ]
         }
     ]

@@ -1,5 +1,6 @@
 import streamlit as st
 from modeling_clip import CLIP
+from modeling_dandelin import VQADandelin
 from frame_extraction2 import FrameExtractor
 import os
 import time
@@ -7,6 +8,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 # Initialize components
 clip_model = CLIP(device="cpu")
+vqa_model = VQADandelin()
 
 # Streamlit UI
 st.title("Video Frame Retrieval using CLIP")
@@ -23,372 +25,6 @@ detection_type = st.selectbox(
 st.write("You selected:", detection_type)
 
 if detection_type != "None":
-
-    # Define the text prompts for each detection type
-    # text_prompts = {
-    #     "multiple persons": ["A photo of multiple persons"],
-    #     "single person": ["A photo of a single person"],
-    #     "no person": ["A photo with no person"]
-    # }
-
-
-#     text_prompts = {
-#     "multiple persons": [
-#         "A photo of multiple persons",
-#         "A photo with several people present",
-#         "A picture featuring a group of people",
-#         "A picture with more than one person visible",
-#         "A photo showing numerous people",
-#         "A group of people in a picture",
-#         "A photo with multiple faces.",
-#         "Two or more persons taking a selfie",
-
-#         "An image with more than one person.",
-#         "An image showing multiple persons",
-#         "An image of multiple persons",
-#         "An image of several people present",
-#         "An image of several persons interacting",
-#         "An image of multiple persons interacting",
-#         "An image showing multiple faces.",
-
-#         "A group of people",
-#         "A group of people working",
-
-
-
-#         "There are more than two perosns in a room"
-
-#         # "A photo of multiple persons, with some in the background.",
-#         # "An image showing people in the foreground and background.",
-#         # "A picture of a group with some persons located in the background.",
-#         # "A photo with people interacting in the foreground and others in the background.",
-#         # "A scene capturing both foreground and background persons.",
-#         # "A photo featuring several individuals, with some appearing in the background.",
-
-#         # "A photo of multiple persons facing the camera.",
-#         # "A picture showing multiple persons with their faces towards the camera.",
-#         # "An image showing several people looking directly at the camera."
-#     ],
-#     "single person": [
-#         "A photo of a single person",
-#         # "A photo of a single person facing the camera.",
-#         # "An image showing one individual looking directly at the camera.",
-#         "A picture of one person",
-#         "A photo with just one person",
-#         "A photo of a person working",
-#         "A photo showing single face"
-        
-
-#         "An image showing single person",
-#         "An image featuring one individual",
-#         "An image of a lone individual",
-#         "A picture of one person",
-#         "An image showing an individual alone",
-#         # "An image showing singe face",
-
-#         "A photo of the person working",
-#         "A photo containing a single person",
-
-#         "There is a person in a room"
-        
-#     ],
-#     "no person": [
-#         "A photo with no person",
-#         "A photo that has no one in it",
-
-#         "An image that does not contain any people",
-#         "An image devoid of people",
-
-#         "A picture showing an empty space",
-
-#         "A picture where no humans are visible",
-#         "A photo of an empty room with no person visible",
-#         "An image showing an empty room with no person visible",
-
-#         ]
-
-#     }
-
-
-#     text_prompts_phone_detection = {
-#         "person using a phone":[
-#             "An image of a person holding a mobile phone in their hand",
-#             "A photo of a person holding a mobile phone in their hand",
-#             "An image of an individual holding a mobile phone in their hand",
-
-#             "An image of a person holding a smartphones in their hand",
-#             "A photo of a person holding a smartphones in their hand",
-#             "An image of an individual holding a smartphones in their hand",
-#             "A picture showing some people on their smartphones",
-
-#     ],
-#     "person not using a phone":[
-#             "An image of a person not holding a mobile phone in their hand",
-#             "A photo of a person not holding a mobile phone in their hand",
-#             "An image of an individual without a mobile phone",
-
-#             "An image of a person not holding a smartphone in their hand.",
-#             "A photo of a person not holding a smartphone in their hand.",
-#             "An image of an individual not holding a smartphone in their hand.",
-#             "A picture showing some people not using their smartphones.",
-#     ]
-    
-    
-#     }
-
-
-#     text_prompts_book_detection = {
-#     "person using a book": [
-#         "A photo of a person reading a book",
-#         "An image of someone holding a book",
-#         "A picture showing an individual studying from a book",
-#         "A photo of a person flipping through the pages of a book",
-#         "A close-up image of a person reading a book",
-#         "A photo of a person in a room with books present",
-#     ],
-#     "person not using a book": [
-#         "A photo of a person not holding any book",
-#         "A photo of a person not reading a book",
-#         "An image of someone not holding a book",
-#         "A picture of an individual engaged in an activity other than reading a book",
-#         "A photo of a person in a room with no books present",
-#     ]
-# }
-
-    # text_prompts = {
-    # "multiple persons": [
-    #     "A photo of multiple people",
-    #     "A photo with several people present",
-    #     "A picture featuring a group of people",
-    #     "A picture with more than one person visible",
-    #     "A photo showing numerous people",
-    #     "A group of people in a picture",
-    #     "A photo with multiple faces.",
-    #     "Two or more people taking a selfie",
-    #     "An image with more than one person.",
-    #     "An image showing multiple people",
-    #     "An image of multiple people",
-    #     "An image of several people present",
-    #     # "An image of several persons interacting",
-    #     # "An image of multiple persons interacting",
-    #     "An image showing multiple faces.",
-    #     "A group of people",
-    #     "A group of people working",
-    #     "There is more than one person in a room.",
-    #     "There are multiple people in a room.",
-    #     "More than one person is present in the room.",
-    #     "There is more than one person sitting in a room.",
-    #     "There are multiple people sitting in a room.",
-    #     "There is more than one person standing in a room.",
-    #     "There are multiple people standing in a room.",
-    #     # "A photo of a person interacting with another person.",
-    #     # "An image of a person interacting with someone else.",
-
-    # ],
-    # "single person": [
-    #     "A photo of a single person",
-    #     # "A photo of a single person facing the camera.",
-    #     # "An image showing one individual looking directly at the camera.",
-    #     "A picture of one person",
-    #     "A photo with just one person",
-    #     "A photo of a person working",
-    #     "A photo showing single face",
-    #     "An image showing single person",
-    #     "An image featuring one individual",
-    #     "An image of a lone individual",
-    #     "A picture of one person",
-    #     "An image showing an individual alone",
-    #     "An image showing a singe face",
-
-    #     "A photo of a person working",
-    #     "A photo containing a single person",
-
-    #     "A photo of a person taking a selfie",
-    #     "A photo of one person looking at the camera."
-        
-    # ],
-    # "no person": [
-    #     "A photo with no people",
-    #     "A photo that has no one in it",
-
-    #     "An image that does not contain any people",
-    #     "An image devoid of people",
-
-    #     "A picture showing an empty space",
-
-    #     "A picture where no humans are visible",
-    #     "A photo of an empty room with no people visible",
-    #     "An image showing an empty room with no people visible",
-
-    #     "A photo of a room with no people",
-    #     "An image showing a room with no person",
-
-    #     ]
-
-    # }
-
-
-    # text_prompts = {
-    # "multiple persons": [
-    #     "A photo of multiple persons",
-    #     "A photo with several persons present",
-    #     "A picture featuring a group of persons",
-    #     "A picture with more than one person visible",
-    #     "A photo showing numerous persons",
-    #     "A group of persons in a picture",
-    #     "A photo with multiple faces visible",
-    #     "Two or more persons are present",
-    #     "An image with more than one person",
-    #     "An image showing multiple persons",
-    #     "An image of multiple persons",
-    #     "An image of several persons present",
-    #     "An image showing multiple faces",
-    #     "More than one persons are present",
-    #     "Several persons are sitting or standing together",
-    # ],
-    # "single person": [
-    #     "A photo of a single person",
-    #     "A picture of one person",
-    #     "A photo with just one person",
-    #     "A photo of a person working alone",
-    #     "A photo showing a single face",
-    #     "An image showing one person",
-    #     "An image featuring one individual",
-    #     "An image of a lone individual",
-    #     "A picture of one person",
-    #     "An image showing an individual alone",
-    #     "An image containing a single person",
-    #     "A photo of a person taking a selfie",
-    #     "A photo of one person looking at the camera"
-    # ],
-    # "no person": [
-    #     "A photo with no person",
-    #     "A photo that has no one in it",
-    #     "An image that does not contain any person",
-    #     "An image devoid of person",
-    #     "A picture showing an empty space",
-    #     "A picture where no humans are visible",
-    #     "An image without any person",
-    #     "A photo with no humans present",
-    #     "An image with no person visible",
-    #     "A photo of an empty scene with no person"
-    # ]}
-
-
-    # text_prompts = {
-    # "multiple persons": [
-    #     "a photo of 2 persons",
-    #     "a photo of 2 people",
-    #     "a photo of 2 or more persons",
-    #     "a photo of 2 or more peoples",
-
-    #     "a photo of 2 people's faces",
-    #     "a photo of 2 persons faces",
-    #     "a photo of 2 or more people's faces",
-    #     "a photo of 2 or more persons faces",
-    # ],
-    # "single person": [
-    # "a photo of 1 person",
-    # "a photo of 1 people",
-
-    # "a photo of 1 person's face",
-
-    # ],
-    # "no person": [
-    #     "a photo of no people",
-    #     "a photo of a place without any people.",
-    #     "a photo of a place without any person.",
-
-    #     "a photo of 0 people's faces.",
-    #     "a photo of 0 persons' faces.",
-
-    # ]}
-
-    text_prompts_phone_detection = {
-        "person using a phone":[
-
-            "A photo of a person is looking at his phone",
-            # "Thers is a a person looking at his phone",
-            # "A photo of a person is looking at his cell phone",
-            # "Thers is a a person looking at his cell phone",
-
-            # "A photo of a person holding a cell phone",
-            # "An image of a person holding a cell phone.",
-            # "A photo showing a person using a cell phone.",
-
-
-            # "A photo of a person holding a cell phone in their hand",
-            # "An image of an individual holding a cell phone in their hand",
-            # "An image of a person holding a smartphones in their hand",
-            # "A photo of a person holding a smartphones in their hand",
-
-
-            # "An image of a person holding a mobile phone in their hand",
-
-            # "An image of an individual holding a smartphones in their hand",
-            # "A picture showing some people on their smartphones",
-
-    ],
-    "person not using a phone":[
-            "A photo of a person is not looking at his phone",
-            # "An image of a person not holding a mobile phone in their hand",
-            # "A photo of a person not holding a mobile phone in their hand",
-            # "An image of an individual without a mobile phone",
-            # "An image of a person not holding a smartphone in their hand.",
-            # "A photo of a person not holding a smartphone in their hand.",
-            # "An image of an individual not holding a smartphone in their hand.",
-            # "A picture showing some people not using their smartphones.",
-    ]}
-
-
-    text_prompts_book_detection = {
-    "person using a book": [
-        "A photo of a person reading a book",
-        "An image of someone holding a book",
-        "A picture showing an individual studying from a book",
-        "A photo of a person flipping through the pages of a book",
-        "A close-up image of a person reading a book",
-        "A photo of a person in a room with books present",
-    ],
-    "person not using a book": [
-        "A photo of a person not holding any book",
-        "A photo of a person not reading a book",
-        "An image of someone not holding a book",
-        "A picture of an individual engaged in an activity other than reading a book",
-        "A photo of a person in a room with no books present",
-    ]
-    }
-
-    text_prompts_fsla_detection = {
-    "fsla": [
-        "A photo of a person not facing the camera.",
-        "An image of a person turning away from the camera",
-        "A picture showing a person looking away from the camera.",
-        "An image of a person facing sideways, not looking at the camera.",
-        "An image of a person facing away from the camera.",
-
-        "A photo of a person looking to the left.",
-        "A photo of a person turning their head to the left.",
-        "An image of a person facing left, not looking at the camera",
-        "A photo of someone with their attention directed to the left.",
-
-        "A photo of a person looking to the right.",
-        "A photo of a person turning their head to the right.",
-        "An image of a person facing right, not looking at the camera",
-        "A photo of someone with their attention directed to the right.",
-    ],
-    "not_fsla": [
-        "A photo of a person facing the camera and looking directly at it.",
-        "An image of a person making eye contact with the camera.",
-        "A picture showing a person staring straight into the camera.",
-        "An image of a person with their gaze fixed on the camera.",
-        "A photo of someone looking directly at the camera lens.",
-        "A picture showing a person engaging with the camera by looking straight at it.",
-        "An image of a person positioned in front of the camera, making direct eye contact.",
-    ]
-    }
-
-
 
     text_prompts = {
     "multiple_persons": [
@@ -811,13 +447,23 @@ if detection_type != "None":
     # frames_dir = "/home/ajeet/codework/web_dataset/multiple_persons"
     # frames = [os.path.join(frames_dir, image) for image in os.listdir(frames_dir)]
 
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2529909"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2562989"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2565397"
     # frames_dir = "/home/ajeet/codework/dataset_frames/2572904"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2655744"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2602597"
     # frames_dir = "/home/ajeet/codework/dataset_frames/2573678"
-    frames_dir = "/home/ajeet/codework/dataset_frames/2562989"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2575985"
+    frames_dir = "/home/ajeet/codework/dataset_frames/2578378"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2582196"
     # frames_dir = "/home/ajeet/codework/dataset_frames/2591822"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2598336"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2602597"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2603060"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2619480"
     # frames_dir = "/home/ajeet/codework/dataset_frames/2625050"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2648356"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2649876"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2655744"
     
     frames = [os.path.join(frames_dir, image) for image in os.listdir(frames_dir)]
 
@@ -842,6 +488,10 @@ if detection_type != "None":
 
 
     # Display layout configuration
+
+
+    # frames = frames[:100]
+
     num_columns = 6  # Number of columns in a row for displaying images
     columns = st.columns(num_columns)
     st.write(f"Running {detection_type} detection on each frame...")
@@ -856,7 +506,7 @@ if detection_type != "None":
     person_using_book_frames = []
     person_fsla_frames = []
 
-    start_time = time.time()
+    st.write(f"Total frames: {len(frames)}")
 
     # Get embeddings for all frames
     start_time = time.time()
@@ -867,100 +517,77 @@ if detection_type != "None":
     st.write(f"Time taken to extract embeddings: {time_taken_by_embeddings:.2f} seconds")
 
     # Classify each frame
+    query = "How many people are there?"
+    threshold = 0.90
+    threshold2 = 0.75
     start_time = time.time()
-
     precomputed_embeddings = clip_model.precompute_prompt_embeddings(text_prompts)
+
+    shifted_frames_by_vqa = []
+    shifted_frames_by_vqa_ther2 = []
     for i, (frame_path, image_embedding) in enumerate(zip(frames, image_embeddings)):
-        # Define text prompts for each classification
-
-        # label, prob = clip_model.classify_image(image_embedding, text_prompts)
-        label, prob = clip_model.classify_image(image_embedding, precomputed_embeddings)
+        # Classify with CLIP model
+        clip_label, _ = clip_model.classify_image(image_embedding, precomputed_embeddings)
         
-        # Group frames by classification
-        if label == "no_person":
-            no_person_frames.append((frame_path, prob))
-        elif label == "single_person":
-            single_person_frames.append((frame_path, prob))
-        elif label == "multiple_persons":
-            multiple_person_frames.append((frame_path, prob))
+        # Classify with VQA model
+        vqa_label, vqa_prob = vqa_model.classify(frame_path, query)
 
-
-    # Phone detection
-    # precomputed_embeddings_phone = clip_model.precompute_prompt_embeddings(text_prompts_phone_detection)
-    # for i, (frame_path, image_embedding) in enumerate(zip(frames, image_embeddings)):
-    #     # Define text prompts for each classification
-
-    #     # label, prob = clip_model.classify_image(image_embedding, text_prompts)
-    #     label, prob = clip_model.classify_image(image_embedding, precomputed_embeddings_phone)
+        # Same classification
+        if clip_label == vqa_label or vqa_label == "Uncertain":
+            if clip_label == "no_person":
+                no_person_frames.append((frame_path, vqa_prob))
+            elif clip_label == "single_person":
+                single_person_frames.append((frame_path, vqa_prob))
+            elif clip_label == "multiple_persons":
+                multiple_person_frames.append((frame_path, vqa_prob))
         
-    #     # Group frames by classification
-    #     if label == "person using a phone":
-    #         person_using_phone_frames.append((frame_path, prob))
+        else:
+            # Check the VQA model's probability for disagreement
+            # if vqa_prob >= threshold:
+            #     shifted_frames_by_vqa.append((frame_path, vqa_prob))
+            #     if vqa_label == "no_person":
+            #         no_person_frames.append((frame_path, vqa_prob))
+            #     elif vqa_label == "single_person":
+            #         single_person_frames.append((frame_path, vqa_prob))
+            #     elif vqa_label == "multiple_persons":
+            #         multiple_person_frames.append((frame_path, vqa_prob))
 
 
-
-    # # Book detection
-    # precomputed_embeddings_book = clip_model.precompute_prompt_embeddings(text_prompts_book_detection)
-    # for i, (frame_path, image_embedding) in enumerate(zip(frames, image_embeddings)):
-    #     # Define text prompts for each classification
-
-    #     # label, prob = clip_model.classify_image(image_embedding, text_prompts)
-    #     label, prob = clip_model.classify_image(image_embedding, precomputed_embeddings_book)
-        
-    #     # Group frames by classification
-    #     if label == "person using a book":
-    #         # print(label)
-    #         person_using_book_frames.append((frame_path, prob))
-
-
-    # # flsa detection
-    # precomputed_embeddings_fsla = clip_model.precompute_prompt_embeddings(text_prompts_fsla_detection)
-    # for i, (frame_path, image_embedding) in enumerate(zip(frames, image_embeddings)):
-    #     # Define text prompts for each classification
-
-    #     # label, prob = clip_model.classify_image(image_embedding, text_prompts)
-    #     label, prob = clip_model.classify_image(image_embedding, precomputed_embeddings_fsla)
-        
-    #     # Group frames by classification
-    #     if label == "fsla":
-    #         # print(label)
-    #         person_fsla_frames.append((frame_path, prob))
+            if vqa_prob >= threshold:  # Check for the first threshold of 90%
+            # Second query: How many person faces are there?
+                face_count_query = "How many people's faces are there?"
+                face_count_label, face_count_prob = vqa_model.classify(frame_path, face_count_query)
+                
+                # Check if the face count label is different and its probability
+                if face_count_prob >= threshold2:  # Check for the second threshold of 90%
+                    shifted_frames_by_vqa_ther2.append((frame_path, face_count_prob))
+                    if face_count_label == "no_person":
+                        no_person_frames.append((frame_path, face_count_prob))
+                    elif face_count_label == "single_person":
+                        single_person_frames.append((frame_path, face_count_prob))
+                    elif face_count_label == "multiple_persons":
+                        multiple_person_frames.append((frame_path, face_count_prob))
+                else:
+                    # If the second query does not meet the threshold, keep the original class
+                    if vqa_label == "no_person":
+                        no_person_frames.append((frame_path, vqa_prob))
+                    elif vqa_label == "single_person":
+                        single_person_frames.append((frame_path, vqa_prob))
+                    elif vqa_label == "multiple_persons":
+                        multiple_person_frames.append((frame_path, vqa_prob))
+            else:
+                # If VQA probability is below the threshold, classify according to CLIP model
+                shifted_frames_by_vqa.append((frame_path, vqa_prob))
+                if clip_label == "no_person":
+                    no_person_frames.append((frame_path, vqa_prob))
+                elif clip_label == "single_person":
+                    single_person_frames.append((frame_path, vqa_prob))
+                elif clip_label == "multiple_persons":
+                    multiple_person_frames.append((frame_path, vqa_prob))
 
 
     time_taken_by_clip = time.time() - start_time
-    st.write(f"Time taken by clip: {time_taken_by_clip:.2f} seconds")
-
-    # Function to display frames with a specific label
-    # def display_frames(label, frames):
-    #     st.write(f"### {label.capitalize()} Frames (Count: {len(frames)})")
-    #     num_columns = 8  # Adjust the number of columns for displaying images
-    #     columns = st.columns(num_columns)
-    #     for i, (frame_path, prob) in enumerate(frames):
-    #         columns[i % num_columns].image(frame_path, caption=f"prob: {prob:.2f}", use_column_width=True)
-    #     # st.write(f"### Total {label.capitalize()} Frames: {len(frames)}")
-
-
-    # def create_big_image(frames, grid_size=(10, 10), thumbnail_size=(100, 100)):
-    #     """Create a big image by arranging smaller images in a grid."""
-    #     big_image_width = grid_size[0] * thumbnail_size[0]
-    #     big_image_height = grid_size[1] * thumbnail_size[1]
-    #     big_image = Image.new("RGB", (big_image_width, big_image_height))
-
-    #     for i, (frame_path, prob) in enumerate(frames):
-    #         if i >= grid_size[0] * grid_size[1]:  # Limit to the grid size
-    #             break
-    #         small_image = Image.open(frame_path).resize(thumbnail_size)
-
-    #         frame_id = os.path.splitext(os.path.basename(frame_path))[0]
-    #         draw = ImageDraw.Draw(small_image)
-    #         draw.text((5, 5), f"{frame_id}", fill="white")  # Adjust position and color as needed
-
-
-    #         x = (i % grid_size[0]) * thumbnail_size[0]
-    #         y = (i // grid_size[0]) * thumbnail_size[1]
-    #         big_image.paste(small_image, (x, y))
-
-    #     return big_image
+    st.write(f"Time taken by combined clip and vqa: {time_taken_by_clip:.2f} seconds")
 
     def create_big_image(frames, grid_size=(10, 10), thumbnail_size=(100, 100), padding=10):
         """Create a big image by arranging smaller images in a grid with padding."""
@@ -975,7 +602,7 @@ if detection_type != "None":
 
             frame_id = os.path.splitext(os.path.basename(frame_path))[0]
             draw = ImageDraw.Draw(small_image)
-            draw.text((5, 5), f"{frame_id}", fill="white")  # Adjust position and color as needed
+            draw.text((5, 5), f"{frame_id}", fill="red")  # Adjust position and color as needed
 
             # Calculate the position with padding
             x = (i % grid_size[0]) * (thumbnail_size[0] + padding)
@@ -1001,7 +628,6 @@ if detection_type != "None":
 
     # Display the frames grouped by their labels
     if no_person_frames:
-        print()
         no_person_frames = sorted(no_person_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
         display_frames("no person", no_person_frames)
     if single_person_frames:
@@ -1011,16 +637,13 @@ if detection_type != "None":
         multiple_person_frames = sorted(multiple_person_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
         display_frames("multiple persons", multiple_person_frames)
 
-
-    if person_using_phone_frames:
-        person_using_phone_frames = sorted(person_using_phone_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
-        display_frames("person using a phone", person_using_phone_frames)
-    if person_using_book_frames:
-        person_using_book_frames = sorted(person_using_book_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
-        display_frames("person using a book", person_using_book_frames)
-
+    if shifted_frames_by_vqa:
+        shifted_frames_by_vqa = sorted(shifted_frames_by_vqa, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
+        display_frames("shifted_frames_by_vqa", shifted_frames_by_vqa)
     
-    if person_fsla_frames:
-        person_fsla_frames = sorted(person_fsla_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
-        display_frames("Fsla", person_fsla_frames)
+    if shifted_frames_by_vqa_ther2:
+        shifted_frames_by_vqa_ther2 = sorted(shifted_frames_by_vqa_ther2, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
+        display_frames("shifted_frames_by_vqa_ther2", shifted_frames_by_vqa_ther2)
 
+    total_frames = len(no_person_frames) + len(single_person_frames) + len(multiple_person_frames)
+    st.write(f"Total frames classified: {total_frames}")

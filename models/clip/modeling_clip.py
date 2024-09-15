@@ -26,7 +26,7 @@ class CLIP:
                 print(f"Memory taken by input tensor: {input_memory / (1024 ** 2):.2f} MB")
                 embeddings = self.model.get_image_features(**inputs)
 
-            embeddings = embeddings / embeddings.norm(dim=-1, keepdim=True)
+            embeddings = embeddings / embeddings.norm(dim=1, keepdim=True)
             embeddings_list.append(embeddings)
         return images, torch.cat(embeddings_list)
 
@@ -36,7 +36,7 @@ class CLIP:
         inputs = self.processor(text=query, return_tensors="pt")
         with torch.no_grad():
             text_embedding = self.model.get_text_features(**inputs)
-        text_embedding = text_embedding / text_embedding.norm(dim=-1, keepdim=True)
+        text_embedding = text_embedding / text_embedding.norm(dim=1, keepdim=True)
         return text_embedding
     
     def compute_similarity(self, image_embedding, text_embedding):
@@ -44,7 +44,12 @@ class CLIP:
         Compute the cosine similarity between image and text embeddings using sklearn.
         """
         # image_embedding and text_embedding are NumPy arrays
-        return cosine_similarity(image_embedding.cpu().numpy().reshape(1, -1), text_embedding.cpu().numpy().reshape(1, -1))[0][0]
+        # return cosine_similarity(image_embedding.cpu().numpy().reshape(1, -1), text_embedding.cpu().numpy().reshape(1, -1))[0][0]
+
+        image_embedding = image_embedding.unsqueeze(0)
+        # text_embedding = text_embedding.unsqueeze(0)
+        cosine_similarity = torch.nn.functional.cosine_similarity(image_embedding, text_embedding)
+        return cosine_similarity
 
     # def classify_image(self, image_embedding, text_prompts):
     #     """
@@ -82,7 +87,7 @@ class CLIP:
             prompt_embeddings = torch.mean(text_embeddings, dim=0)  # PyTorch mean
 
             # Normalize the embedding
-            prompt_embeddings = prompt_embeddings / prompt_embeddings.norm(dim=-1, keepdim=True)
+            prompt_embeddings = prompt_embeddings / prompt_embeddings.norm(dim=1, keepdim=True)
             
             precomputed_prompt_embeddings[label] = prompt_embeddings
         
@@ -100,12 +105,57 @@ class CLIP:
         for label, prompt_embedding in precomputed_prompt_embeddings.items():
             # Compute cosine similarity between the image and the prompt embeddings
             sim = self.compute_similarity(image_embedding, prompt_embedding)
+            # print(sim)
             
             if sim > max_sim:
                 max_sim = sim
                 best_label = label
-        
+        # print("-------")
         return best_label, max_sim
+    
+    # def precompute_prompt_embeddings(self, text_prompts):
+    #     """
+    #     Precompute and return embeddings for each set of text prompts.
+    #     """
+    #     precomputed_prompt_embeddings = {}
+        
+    #     for label, prompt in text_prompts.items():
+    #         # Compute embeddings for each prompt
+    #         text_embeddings = torch.stack([self.get_text_embedding(p) for p in prompt])
+            
+    #         # Normalize each embedding
+    #         # text_embeddings = text_embeddings / text_embeddings.norm(dim=-1, keepdim=True)
+            
+    #         # Store normalized embeddings
+    #         precomputed_prompt_embeddings[label] = text_embeddings
+        
+    #     return precomputed_prompt_embeddings
+
+    # def classify_image(self, image_embedding, precomputed_prompt_embeddings):
+    #     """
+    #     Classify the image by computing the average cosine similarity to precomputed text prompt embeddings 
+    #     and return the label with max average similarity.
+    #     """
+        
+    #     average_similarities = {}
+        
+    #     # Iterate over the precomputed prompt embeddings
+    #     for label, prompt_embeddings in precomputed_prompt_embeddings.items():
+    #         # Calculate cosine similarities for each prompt embedding
+    #         similarities = []
+    #         for prompt_embedding in prompt_embeddings:
+    #             sim = self.compute_similarity(image_embedding, prompt_embedding)
+    #             similarities.append(sim.item())  # Convert tensor to float
+            
+    #         # Compute the average cosine similarity for the current label
+    #         average_similarity = sum(similarities) / len(similarities)
+    #         average_similarities[label] = average_similarity
+        
+    #     # Get the label with the maximum average similarity
+    #     best_label = max(average_similarities, key=average_similarities.get)
+    #     max_average_sim = average_similarities[best_label]
+        
+    #     return best_label, max_average_sim
 
 
 
