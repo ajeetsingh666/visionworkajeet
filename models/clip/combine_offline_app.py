@@ -1,4 +1,4 @@
-import streamlit as st
+# import streamlit as st
 from modeling_clip import CLIP
 from modeling_dandelin import VQADandelin
 from modeling_blip import VQABlip
@@ -7,28 +7,21 @@ import os
 import time
 from PIL import Image, ImageDraw, ImageFont
 from collections import deque
+import logging
+from logging_config import setup_logging
+# from old_offline import convert_to_time
+
+
+setup_logging()
+logger = logging.getLogger(__name__)
+
+print("Ajeet Singh")
 
 # Initialize components
 clip_model = CLIP(device="cpu")
 vqa_model = VQADandelin()
-vqa_blip = VQABlip(device="cpu")
 
-# Streamlit UI
-st.title("Video Frame Retrieval using CLIP")
-
-# Upload video file
-detection_type = st.selectbox(
-    "Select detection type:",
-    ("Multiple persons", 
-     "Single person",
-     "No person present"),
-    # index=None,
-    placeholder="Select violation to be detected...",
-)
-st.write("You selected:", detection_type)
-
-if detection_type != "None":
-
+def prediction(video_id, frames):
     text_prompts = {
     "multiple_persons": [
         "A photo of multiple individuals working together.",
@@ -306,28 +299,28 @@ if detection_type != "None":
         # "A photo of a single individual participating in an activity.",
         # "A photo of a single person working.",
         # "A photo of a single person in a busy workspace",
-    
+
         "A photo of an individual working on a project.",
         "A photo of an individual engaged in a task.",
         "A photo of an individual attending a meeting.",
         "A photo of an individual participating in an activity.",
         "A photo of an individual working.",
         "A photo of an individual in a busy workspace",
-    
+
         "A photo of a solo person working on a project.",
         "A photo of a solo individual engaged in a task.",
         "A photo of a solo person attending a meeting.",
         "A photo of a solo individual participating in an activity.",
         "A photo of a solo person working.",
         "A photo of a solo person in a busy workspace",
-    
+
         "A photo of a sole person working on a project.",
         "A photo of a sole individual engaged in a task.",
         "A photo of a sole person attending a meeting.",
         "A photo of a sole individual participating in an activity.",
         "A photo of a sole person working.",
         "A photo of a sole person in a busy workspace",
-    
+
         "A photo of a person alone working on a project.",
         "A photo of an individual alone engaged in a task.",
         "A photo of a person alone attending a meeting.",
@@ -442,96 +435,17 @@ if detection_type != "None":
     ]}
 
 
-
-    # Load frames from a directory (replace with your actual frame extraction)
-    # frames_dir = "../../../web_dataset/single_person"
-    # frames = [os.path.join(frames_dir, image) for image in os.listdir(frames_dir)]
-
-    # frames_dir = "/home/ajeet/codework/web_dataset/multiple_persons"
-    # frames = [os.path.join(frames_dir, image) for image in os.listdir(frames_dir)]
-
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2529909"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2562989"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2565397"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2572904"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2573678"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2575985"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2578378"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2582196"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2591822"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2598336"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2602597"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2603060"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2619480"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2625050"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2648356"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2649876"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2655744"
-
-    frames_dir = "/tmp/video_incidents_ajeet/2565397"
-    
-    frames = [os.path.join(frames_dir, image) for image in os.listdir(frames_dir)]
-
-    # frames = [
-    #         "/home/ajeet/codework/dataset_frames/2648356/0_466.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_124.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_168.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_48.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_50.jpg",
-# 
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_223.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_1108.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_1358.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_1609.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_2700.jpg",
-
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_2170.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_2351.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_2358.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_2360.jpg",
-    #         "/home/ajeet/codework/dataset_frames/2649876/0_3069.jpg",
-    # ]
-
-#     frames_dirs = [
-#     "/home/ajeet/codework/dataset_frames/2572904",
-#     "/home/ajeet/codework/dataset_frames/2655744",
-#     "/home/ajeet/codework/dataset_frames/2602597",
-#     "/home/ajeet/codework/dataset_frames/2573678",
-#     "/home/ajeet/codework/dataset_frames/2562989",
-#     "/home/ajeet/codework/dataset_frames/2591822",
-#     "/home/ajeet/codework/dataset_frames/2625050"
-#     ]
-
-# # Initialize an empty list to hold all frame paths
-#     frames = []
-
-#     # Iterate through each directory and add frame paths to the list
-#     for frames_dir in frames_dirs:
-#         frames += [os.path.join(frames_dir, image) for image in os.listdir(frames_dir) if os.path.isfile(os.path.join(frames_dir, image))]
-
-#     print("Total frames collected:", len(frames))
-
-
-    # Display layout configuration
-
-
-    # frames = frames[:100]
-
-    num_columns = 6  # Number of columns in a row for displaying images
-    columns = st.columns(num_columns)
-    st.write(f"Running {detection_type} detection on each frame...")
-
     # Lists to hold frames based on classification labels
+
+    # frames = frames[:10]
+
+
     results = []
     no_person_frames = []
     single_person_frames = []
     multiple_person_frames = []
 
-    person_using_phone_frames = []
-    person_using_book_frames = []
-    person_fsla_frames = []
-
-    st.write(f"Total frames: {len(frames)}")
+    logger.info(f"Total Frames in {video_id} video_id:  {len(frames)}")
 
     # Get embeddings for all frames
     start_time = time.time()
@@ -539,7 +453,8 @@ if detection_type != "None":
     print(image_embeddings.nbytes)
     print("----")
     time_taken_by_embeddings = time.time() - start_time
-    st.write(f"Time taken to extract embeddings: {time_taken_by_embeddings:.2f} seconds")
+    # st.write(f"Time taken to extract embeddings: {time_taken_by_embeddings:.2f} seconds")
+    logger.info(f"Time taken to extract embeddings: {time_taken_by_embeddings:.2f} seconds")
 
     # Classify each frame
     query = "How many people are there?"
@@ -548,96 +463,11 @@ if detection_type != "None":
     start_time = time.time()
     precomputed_embeddings = clip_model.precompute_prompt_embeddings(text_prompts)
 
-    shifted_frames_by_vqa = []
-    shifted_frames_by_vqa_ther2 = []
     clip_count = 0
-    # for i, (frame_path, image_embedding) in enumerate(zip(frames, image_embeddings)):
-    #     # Classify with CLIP model
-    #     clip_label, _ = clip_model.classify_image(image_embedding, precomputed_embeddings)
-        
-    #     # Classify with VQA model
-    #     vqa_label, vqa_prob = vqa_model.classify(frame_path, query)
-
-    #     if  vqa_label == "Uncertain":
-    #         clip_count = clip_count + 1
-    #         if clip_label == "no_person":
-    #             no_person_frames.append((frame_path, vqa_prob)) 
-    #         elif clip_label == "single_person":
-    #             single_person_frames.append((frame_path, vqa_prob))
-    #         elif clip_label == "multiple_persons":
-    #             multiple_person_frames.append((frame_path, vqa_prob))
-
-    #         continue
-    #     # Same classification
-    #     if clip_label == vqa_label:
-    #         if vqa_prob > 0.90:
-    #             clip_count = clip_count + 1
-    #             print(f"{frame_path} : {vqa_prob}")
-    #             if clip_label == "no_person":
-    #                 no_person_frames.append((frame_path, vqa_prob))
-    #             elif clip_label == "single_person":
-    #                 single_person_frames.append((frame_path, vqa_prob))
-    #             elif clip_label == "multiple_persons":
-    #                 multiple_person_frames.append((frame_path, vqa_prob))
-    #         else:
-    #             face_count_query = "How many people's faces are there?"
-    #             face_count_label, face_count_prob = vqa_model.classify(frame_path, face_count_query)
-
-    #             if face_count_label != clip_label and face_count_prob > 0.90:
-    #                 shifted_frames_by_vqa_ther2.append((frame_path, face_count_prob))
-    #             # Assign based on face count label if confidence is high
-    #                 if face_count_label == "no_person":
-    #                     no_person_frames.append((frame_path, face_count_prob))
-    #                 elif face_count_label == "single_person":
-    #                     single_person_frames.append((frame_path, face_count_prob))
-    #                 elif face_count_label == "multiple_persons":
-    #                     multiple_person_frames.append((frame_path, face_count_prob))
-    #             else:
-    #                 clip_count = clip_count + 1
-    #                 # If face count confidence is low, fall back to CLIP model
-    #                 if clip_label == "no_person":
-    #                     no_person_frames.append((frame_path, vqa_prob))
-    #                 elif clip_label == "single_person":
-    #                     single_person_frames.append((frame_path, vqa_prob))
-    #                 elif clip_label == "multiple_persons":
-    #                     multiple_person_frames.append((frame_path, vqa_prob))
-        
-    #     else:
-    #         if vqa_prob >= threshold:  # Check for the first threshold of 90%
-    #         # Second query: How many person faces are there?
-    #             face_count_query = "How many people's faces are there?"
-    #             face_count_label, face_count_prob = vqa_model.classify(frame_path, face_count_query)
-                
-    #             # Check if the face count label is different and its probability
-    #             if face_count_prob >= threshold2 and face_count_label != vqa_label:  # Check for the second threshold of 90%
-    #                 shifted_frames_by_vqa_ther2.append((frame_path, face_count_prob))
-    #                 if face_count_label == "no_person":
-    #                     no_person_frames.append((frame_path, face_count_prob))
-    #                 elif face_count_label == "single_person":
-    #                     single_person_frames.append((frame_path, face_count_prob))
-    #                 elif face_count_label == "multiple_persons":
-    #                     multiple_person_frames.append((frame_path, face_count_prob))
-    #             else:
-    #                 # If the second query does not meet the threshold, keep the original class
-    #                 shifted_frames_by_vqa.append((frame_path, vqa_prob))
-    #                 if vqa_label == "no_person":
-    #                     no_person_frames.append((frame_path, vqa_prob))
-    #                 elif vqa_label == "single_person":
-    #                     single_person_frames.append((frame_path, vqa_prob))
-    #                 elif vqa_label == "multiple_persons":
-    #                     multiple_person_frames.append((frame_path, vqa_prob))
-    #         else:
-    #             clip_count = clip_count + 1
-    #             # If VQA probability is below the threshold, classify according to CLIP model
-    #             if clip_label == "no_person":
-    #                 no_person_frames.append((frame_path, vqa_prob))
-    #             elif clip_label == "single_person":
-    #                 single_person_frames.append((frame_path, vqa_prob))
-    #             elif clip_label == "multiple_persons":
-    #                 multiple_person_frames.append((frame_path, vqa_prob))
-
     classified_frames = []
     window_size = 3
+    shifted_by_face_count = []
+    shifter_by_person_vqa = []
     for i, (frame_path, image_embedding) in enumerate(zip(frames, image_embeddings)):
         # Classify with CLIP model
         clip_label, _ = clip_model.classify_image(image_embedding, precomputed_embeddings)
@@ -675,10 +505,12 @@ if detection_type != "None":
                 if vqa_prob >= 0.95:
                     face_count_query = "How many people's faces are there?"
                     face_count_label, face_count_prob = vqa_model.classify(frame_path, face_count_query)
-                    if face_count_prob >= 0.90 and face_count_label != vqa_label:
+                    if face_count_prob >= 0.80 and face_count_label != vqa_label:
+                        shifted_by_face_count.append((frame_path, face_count_prob))
                         final_label = face_count_label
                         final_prob = face_count_prob
                     else:
+                        shifter_by_person_vqa.append((frame_path, vqa_prob))
                         final_label = vqa_label
                         final_prob = vqa_prob
                 else:
@@ -693,37 +525,11 @@ if detection_type != "None":
             "final_prob": final_prob
         })
 
-    # Second pass: Apply temporal consistency
     frame_window = deque(maxlen=window_size)
     print(len(classified_frames))
-    # st.write(f"Before sorting {len(classified_frames)}")
     corrected_frames = []
     classified_frames = sorted(classified_frames, key=lambda x: int(os.path.splitext(os.path.basename(x['frame_path']))[0].split('_')[1]))
-    # st.write(f"Before sorting {len(classified_frames)}")
-    # for frames1 in classified_frames:
-    #     st.write(f"B {frames1['frame_path']}")
-
     corrected_frames.append(classified_frames[0])
-    # for frame in classified_frames:
-    #     frame_window.append(frame)
-
-    #     # Process the middle frame when window is full (size 3)
-    #     if len(frame_window) == window_size:
-    #         prev_frame, curr_frame, next_frame = frame_window
-            
-    #         prev_label = prev_frame["final_label"]
-    #         curr_label = curr_frame["final_label"]
-    #         next_label = next_frame["final_label"]
-
-    #         # Correct if the current frame's label is inconsistent with previous and next frames
-    #         if curr_label != prev_label and curr_label != next_label:
-    #             majority_label = prev_label if prev_label == next_label else curr_label
-    #             curr_frame["final_label"] = majority_label
-    #             curr_frame["final_prob"] = max(prev_frame["final_prob"], next_frame["final_prob"])
-    #             print(f"Outlier detected in {curr_frame['frame_path']}. Corrected label: {majority_label}")
-    #             # st.write(f"Outlier detected in {curr_frame['frame_path']}. Corrected label: {majority_label}")
-
-    #         corrected_frames.append(curr_frame)
 
     shifted_by_window = []
     for frame in classified_frames:
@@ -751,7 +557,7 @@ if detection_type != "None":
                     curr_frame["final_label"] = majority_label
                     curr_frame["final_prob"] = max(prev_prob, next_prob)  # Probability rounded to 4 decimal places
                     print(f"Outlier detected in {curr_frame['frame_path']}. Corrected label: {majority_label}")
-                    st.write(f"Outlier detected in {curr_frame['frame_path']}. Corrected label: {majority_label}")
+                    # st.write(f"Outlier detected in {curr_frame['frame_path']}. Corrected label: {majority_label}")
                     shifted_by_window.append((frame["frame_path"], frame["final_prob"]))
 
                 # Case 2: If all three labels are different, choose the label with the highest rounded probability
@@ -768,22 +574,15 @@ if detection_type != "None":
                     curr_frame["final_label"] = majority_label
                     curr_frame["final_prob"] = max_prob  # Already rounded to 4 decimal places
                     print(f"All labels differ for {curr_frame['frame_path']}. Chose label: {majority_label} with probability: {max_prob}")
-                    st.write(f"All labels differ for {curr_frame['frame_path']}. Chose label: {majority_label} with probability: {max_prob}")
+                    # st.write(f"All labels differ for {curr_frame['frame_path']}. Chose label: {majority_label} with probability: {max_prob}")
 
             # Append the corrected (or unchanged) current frame to corrected_frames
             corrected_frames.append(curr_frame)
 
 
-    # Process any remaining frames in the window
-    # while frame_window:
-    #     corrected_frames.append(frame_window.popleft())
     _, _ , to_add = frame_window
     corrected_frames.append(to_add)
 
-    # for frames2 in corrected_frames:
-    #     st.write(f"corrected_frames {frames2['frame_path']}")
-
-    st.write(f"corrected_frames {len(corrected_frames)}")
     # Final categorized frames
     no_person_frames = []
     single_person_frames = []
@@ -797,104 +596,183 @@ if detection_type != "None":
         elif frame["final_label"] == "multiple_persons":
             multiple_person_frames.append((frame["frame_path"], frame["final_prob"]))
 
-    # for i, (frame_path, image_embedding) in enumerate(zip(frames, image_embeddings)):
-    #     print("inside for loop")
-    #     # Classify with CLIP model
-    #     clip_label, _ = clip_model.classify_image(image_embedding, precomputed_embeddings)
-        
-    #     # Classify with VQA model
-    #     vqa_label, vqa_prob = vqa_model.classify(frame_path, query)
+    logger.info(f"clip_count: {clip_count}")
+    logger.info(f"Total no_person_frames: {len(no_person_frames)}")
+    logger.info(f"Total single_person Frames: {len(single_person_frames)}")
+    logger.info(f"Total multiple_persons Frames: {len(multiple_person_frames)}")
 
-    #     # Same classification
-    #     if clip_label == vqa_label or vqa_label == "Uncertain":
-    #         clip_count = clip_count + 1
-    #         print(f"{frame_path} : {vqa_prob}")
-    #         if clip_label == "no_person":
-    #             no_person_frames.append((frame_path, vqa_prob))
-    #         elif clip_label == "single_person":
-    #             single_person_frames.append((frame_path, vqa_prob))
-    #         elif clip_label == "multiple_persons":
-    #             multiple_person_frames.append((frame_path, vqa_prob))
-        
-    #     else:
-    #         # face_count_query = "How many people's faces are there?"
-    #         # face_count_label, face_count_prob = vqa_model.classify(frame_path, face_count_query)
-    #         face_count_label, face_count_prob = vqa_blip.classify(frame_path, "how many people are in the picture?")
-            
-    #         labels = [clip_label, vqa_label, face_count_label]
-    #         final_label = max(set(labels), key=labels.count)
+    no_person_frames_file_names = []
+    for path_tuple in no_person_frames:
+        file_path = path_tuple[0] 
+        file_name = os.path.basename(file_path) 
+        no_person_frames_file_names.append(file_name) 
 
-    #         face_count_prob = 1
-    #         # Process based on the final label
-    #         if final_label == "no_person":
-    #             no_person_frames.append((frame_path, face_count_prob))
-    #         elif final_label == "single_person":
-    #             single_person_frames.append((frame_path, face_count_prob))
-    #         elif final_label == "multiple_persons":
-    #             multiple_person_frames.append((frame_path, face_count_prob))
+    single_person_frames_file_names = []
+    for path_tuple in single_person_frames:
+        file_path = path_tuple[0] 
+        file_name = os.path.basename(file_path) 
+        single_person_frames_file_names.append(file_name)
+
+
+    multiple_person_frames_file_names = []
+    for path_tuple in multiple_person_frames:
+        file_path = path_tuple[0] 
+        file_name = os.path.basename(file_path) 
+        multiple_person_frames_file_names.append(file_name)
+
+    logger.info(f"no_person_frames frame ids: {no_person_frames_file_names}")
+    # logger.info(f"no_person_frames frame ids: {single_person_frames_file_names}")
+    logger.info(f"no_person_frames frame ids: {multiple_person_frames_file_names}")
+
+    incidents = time_stamp_conversion(corrected_frames)
 
     time_taken_by_clip = time.time() - start_time
-    st.write(f"Time taken by combined clip and vqa: {time_taken_by_clip:.2f} seconds")
+    # st.write(f"Time taken by combined clip and vqa: {time_taken_by_clip:.2f} seconds")
+    logger.info(f"Time taken by combined clip and vqa: {time_taken_by_clip:.2f} seconds")
 
-    def create_big_image(frames, grid_size=(10, 10), thumbnail_size=(100, 100), padding=10):
-        """Create a big image by arranging smaller images in a grid with padding."""
-        big_image_width = grid_size[0] * thumbnail_size[0] + (grid_size[0] - 1) * padding
-        big_image_height = grid_size[1] * thumbnail_size[1] + (grid_size[1] - 1) * padding
-        big_image = Image.new("RGB", (big_image_width, big_image_height))
-
-        for i, (frame_path, prob) in enumerate(frames):
-            if i >= grid_size[0] * grid_size[1]:  # Limit to the grid size
-                break
-            small_image = Image.open(frame_path).resize(thumbnail_size)
-
-            frame_id = os.path.splitext(os.path.basename(frame_path))[0]
-            draw = ImageDraw.Draw(small_image)
-            # font = ImageFont.truetype("arial.ttf", size=10)
-            # draw.text((5, 5), f"{prob:.4f}", fill="red")
-            draw.text((5, 5), f"{frame_id}", fill="red")  # Adjust position and color as needed
+    return incidents
 
 
-            # Calculate the position with padding
-            x = (i % grid_size[0]) * (thumbnail_size[0] + padding)
-            y = (i // grid_size[0]) * (thumbnail_size[1] + padding)
-            big_image.paste(small_image, (x, y))
-
-        return big_image
-
-    def display_frames(label, frames):
-        st.write(f"### {label.capitalize()} Frames (Count: {len(frames)})")
-
-        # Calculate how many big images we can create
-        num_big_images = (len(frames) + 100 - 1) // 100  # 100 small images per big image
-
-        for page in range(num_big_images):
-            start_idx = page * 100
-            end_idx = min(start_idx + 100, len(frames))
-
-            # Create and display the big image for the current batch
-            big_image = create_big_image(frames[start_idx:end_idx], grid_size=(10, 10), thumbnail_size=(100, 100))
-            st.image(big_image, caption=f"Big Image (Batch {page + 1}/{num_big_images})", use_column_width=True)
 
 
-    # Display the frames grouped by their labels
-    if no_person_frames:
-        no_person_frames = sorted(no_person_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
-        display_frames("no person", no_person_frames)
-    if single_person_frames:
-        single_person_frames = sorted(single_person_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
-        display_frames("single person", single_person_frames)
-    if multiple_person_frames:
-        multiple_person_frames = sorted(multiple_person_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
-        display_frames("multiple persons", multiple_person_frames)
-
-    if shifted_frames_by_vqa:
-        shifted_frames_by_vqa = sorted(shifted_frames_by_vqa, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
-        display_frames("shifted_frames_by_vqa", shifted_frames_by_vqa)
+def convert_to_boolean_list(corrected_frames):
     
-    if shifted_frames_by_vqa_ther2:
-        shifted_frames_by_vqa_ther2 = sorted(shifted_frames_by_vqa_ther2, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
-        display_frames("shifted_frames_by_vqa_ther2", shifted_frames_by_vqa_ther2)
+    no_person_list = [False] * (len(corrected_frames))
+    single_person_list = [False] * (len(corrected_frames))
+    multiple_person_list = [False] * (len(corrected_frames))
 
-    total_frames = len(no_person_frames) + len(single_person_frames) + len(multiple_person_frames)
-    st.write(f"Total frames classified: {total_frames}")
-    st.write(f"clip_count: {clip_count}")
+
+    for frame in corrected_frames:
+        
+        frame_name = frame["frame_path"].split('/')[-1]  # Get the last part of the path
+        frame_id = int(frame_name.split('_')[1].split('.')[0])
+
+        frame_id = frame_id - 1
+
+        if frame["final_label"] == "no_person":
+            no_person_list[frame_id] = True
+        elif frame["final_label"] == "single_person":
+            single_person_list[frame_id] = True
+        elif frame["final_label"] == "multiple_persons":
+            multiple_person_list[frame_id] = True
+
+    return no_person_list, single_person_list, multiple_person_list
+
+    
+
+def time_stamp_conversion(corrected_frames):
+    incidents = {}
+
+    no_person_list, single_person_list, multiple_person_list = convert_to_boolean_list(corrected_frames)
+
+    violation_types = ["No_Person", "Multiple_Person"]
+
+    confidence_measures = []
+    incident_list = convert_to_time(no_person_list, fps=1)
+    # incidents["No_Person"] = (incident_list, confidence_measures)
+    incidents["NO_FACE"] = (incident_list, confidence_measures)
+
+    confidence_measures = []
+    incident_list = convert_to_time(multiple_person_list, fps=1)
+    # incidents["Multiple_Person"] = (incident_list, confidence_measures)
+    incidents["MULTIPLE_FACES"] = (incident_list, confidence_measures)
+
+    return incidents
+
+def convert_to_time(list, fps):
+    time_list = []
+
+    # add False to starting point and ending point of list
+    newlist = [False] + list + [False]
+    for frame_id in range(0, newlist.__len__() - 1):
+        if newlist[frame_id] == False and newlist[frame_id + 1] == True:
+            time_start = frame_id
+        elif newlist[frame_id] == True and newlist[frame_id + 1] == False:
+            time_list.append((time_start / float(fps), (frame_id - 1) / float(fps)))
+    return time_list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # def create_big_image(frames, grid_size=(10, 10), thumbnail_size=(100, 100), padding=10):
+    #     """Create a big image by arranging smaller images in a grid with padding."""
+    #     big_image_width = grid_size[0] * thumbnail_size[0] + (grid_size[0] - 1) * padding
+    #     big_image_height = grid_size[1] * thumbnail_size[1] + (grid_size[1] - 1) * padding
+    #     big_image = Image.new("RGB", (big_image_width, big_image_height))
+
+    #     for i, (frame_path, prob) in enumerate(frames):
+    #         if i >= grid_size[0] * grid_size[1]:  # Limit to the grid size
+    #             break
+    #         small_image = Image.open(frame_path).resize(thumbnail_size)
+
+    #         frame_id = os.path.splitext(os.path.basename(frame_path))[0]
+    #         draw = ImageDraw.Draw(small_image)
+    #         # font = ImageFont.truetype("arial.ttf", size=10)
+    #         # draw.text((5, 5), f"{prob:.4f}", fill="red")
+    #         draw.text((5, 5), f"{frame_id}", fill="red")  # Adjust position and color as needed
+
+
+    #         # Calculate the position with padding
+    #         x = (i % grid_size[0]) * (thumbnail_size[0] + padding)
+    #         y = (i // grid_size[0]) * (thumbnail_size[1] + padding)
+    #         big_image.paste(small_image, (x, y))
+
+    #     return big_image
+
+    # def display_frames(label, frames):
+    #     st.write(f"### {label.capitalize()} Frames (Count: {len(frames)})")
+
+    #     # Calculate how many big images we can create
+    #     num_big_images = (len(frames) + 100 - 1) // 100  # 100 small images per big image
+
+    #     for page in range(num_big_images):
+    #         start_idx = page * 100
+    #         end_idx = min(start_idx + 100, len(frames))
+
+    #         # Create and display the big image for the current batch
+    #         big_image = create_big_image(frames[start_idx:end_idx], grid_size=(10, 10), thumbnail_size=(100, 100))
+    #         st.image(big_image, caption=f"Big Image (Batch {page + 1}/{num_big_images})", use_column_width=True)
+
+
+    # # Display the frames grouped by their labels
+    # if no_person_frames:
+    #     no_person_frames = sorted(no_person_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
+    #     display_frames("no person", no_person_frames)
+    # if single_person_frames:
+    #     single_person_frames = sorted(single_person_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
+    #     display_frames("single person", single_person_frames)
+    # if multiple_person_frames:
+    #     multiple_person_frames = sorted(multiple_person_frames, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
+    #     display_frames("multiple persons", multiple_person_frames)
+
+    # if shifted_frames_by_vqa:
+    #     shifted_frames_by_vqa = sorted(shifted_frames_by_vqa, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
+    #     display_frames("shifted_frames_by_vqa", shifted_frames_by_vqa)
+
+    # if shifted_frames_by_vqa_ther2:
+    #     shifted_frames_by_vqa_ther2 = sorted(shifted_frames_by_vqa_ther2, key=lambda x: int(os.path.splitext(os.path.basename(x[0]))[0].split('_')[1]))
+    #     display_frames("shifted_frames_by_vqa_ther2", shifted_frames_by_vqa_ther2)
+
+    # total_frames = len(no_person_frames) + len(single_person_frames) + len(multiple_person_frames)
+    # st.write(f"Total frames classified: {total_frames}")
+    # st.write(f"clip_count: {clip_count}")

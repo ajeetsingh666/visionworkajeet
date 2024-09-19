@@ -306,7 +306,6 @@ if detection_type != "None":
 
     text_prompts_phone_detection = {
         "person using a phone":[
-
             "A photo of a person is looking at his phone",
             # "Thers is a a person looking at his phone",
             # "A photo of a person is looking at his cell phone",
@@ -811,13 +810,23 @@ if detection_type != "None":
     # frames_dir = "/home/ajeet/codework/web_dataset/multiple_persons"
     # frames = [os.path.join(frames_dir, image) for image in os.listdir(frames_dir)]
 
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2529909"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2562989"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2565397"
     # frames_dir = "/home/ajeet/codework/dataset_frames/2572904"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2655744"
-    # frames_dir = "/home/ajeet/codework/dataset_frames/2602597"
     # frames_dir = "/home/ajeet/codework/dataset_frames/2573678"
-    frames_dir = "/home/ajeet/codework/dataset_frames/2562989"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2575985"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2578378"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2582196"
     # frames_dir = "/home/ajeet/codework/dataset_frames/2591822"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2598336"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2602597"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2603060"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2619480"
     # frames_dir = "/home/ajeet/codework/dataset_frames/2625050"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2648356"
+    frames_dir = "/home/ajeet/codework/dataset_frames/2649876"
+    # frames_dir = "/home/ajeet/codework/dataset_frames/2655744"
     
     frames = [os.path.join(frames_dir, image) for image in os.listdir(frames_dir)]
 
@@ -840,6 +849,8 @@ if detection_type != "None":
 
 #     print("Total frames collected:", len(frames))
 
+
+    st.write(f"Total frames: {len(frames)}")
 
     # Display layout configuration
     num_columns = 6  # Number of columns in a row for displaying images
@@ -975,7 +986,7 @@ if detection_type != "None":
 
             frame_id = os.path.splitext(os.path.basename(frame_path))[0]
             draw = ImageDraw.Draw(small_image)
-            draw.text((5, 5), f"{frame_id}", fill="white")  # Adjust position and color as needed
+            draw.text((5, 5), f"{frame_id}", fill="red")  # Adjust position and color as needed
 
             # Calculate the position with padding
             x = (i % grid_size[0]) * (thumbnail_size[0] + padding)
