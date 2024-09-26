@@ -23,10 +23,14 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 def process_video(video_path, image_path, onboarding_imgs, violations):
     start_time = time.time()
 
-    video_file_path_list = ["/home/ajeet/codework/daaset-download/Dataset/benchmark_dataset_13_1_20/2578378/2578378"]
-    video_file_path = "/home/ajeet/codework/daaset-download/Dataset/benchmark_dataset_13_1_20/2578378/2578378"
+    # video_file_path_list = ["/home/ajeet/codework/daaset-download/Dataset/benchmark_dataset_13_1_20/2529909/2529909"]
+    # video_file_path = "/home/ajeet/codework/daaset-download/Dataset/benchmark_dataset_13_1_20/2529909/2529909"
 
-    folder_name = os.path.splitext(os.path.basename(video_file_path_list[0]))[0]
+    # video_file_path_list = [video_path]
+    video_file_path = video_path[0]
+
+    # folder_name = os.path.splitext(os.path.basename(video_file_path_list[0]))[0]
+    folder_name = os.path.splitext(os.path.basename(video_file_path))[0]
     tmp_path = tempfile.gettempdir() + '/video_incidents_ajeet/' + folder_name + '/'
 
     if os.path.exists(tmp_path):
@@ -39,7 +43,8 @@ def process_video(video_path, image_path, onboarding_imgs, violations):
     workflow_num = -2
 
     fps = 1
-    violation_types = ["No_Person", "Multiple_Person"]
+    # violation_types = ["No_Person", "Multiple_Person"]
+    violation_types = ["NO_FACE", "MULTIPLE_FACES", "WRONG_FACE", "FSLA", "BACKGROUND_MOTION"]
     video_preview_tmp_path = tempfile.gettempdir() + '/video_incident_previews_ajeet/' +\
                                         str(folder_name) + '_' + \
                                         str(-2 if workflow_num is None else workflow_num) + '/'
@@ -74,3 +79,6 @@ def process_video(video_path, image_path, onboarding_imgs, violations):
     logger.info(f"Total Time taken: {end_time}")
 
     return incidents, certainity, [], [], preview_image_dict
+
+if __name__ == "__main__":
+    process_video(["/home/ajeet/codework/daaset-download/Dataset/benchmark_dataset_13_1_20/2578685/2578685"], [], [], [])
